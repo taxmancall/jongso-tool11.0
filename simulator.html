@@ -179,7 +179,7 @@ input:focus,select:focus{outline:none;border-color:#185FA5;}
 <div class="container">
 <a class="back" href="index.html">← 인덱스로 돌아가기</a>
 <h1>🧮 종합소득세 신고대리 가결산 시뮬레이터</h1>
-<p class="sub">2025년 귀속 종합소득세 · 간편(기준)/간편(단순)/기장 3가지 비교 <span style="color:#185FA5;font-weight:600;">v43</span> <span style="font-size:11px;color:#888;">(금융·임대·기타·이월결손금 합산)</span></p>
+<p class="sub">2025년 귀속 종합소득세 · 간편(기준)/간편(단순)/기장 3가지 비교 <span style="color:#185FA5;font-weight:600;">v46</span> <span style="font-size:11px;color:#888;">(고객 안내문 — 인사말 자동 추가)</span></p>
 
 <!-- 이름 입력 -->
 <!-- ========== 입력 영역 (PDF 1번에서만 표시) ========== -->
@@ -463,12 +463,12 @@ input:focus,select:focus{outline:none;border-color:#185FA5;}
 </div>
 
 <!-- ★ v43: 기타 합산소득 통합 카드 (금융·임대·기타·이월결손금) -->
-<div class="card" style="background:#FFFBF0;border:1px solid #D4A53D;">
-  <div class="card-title" style="color:#A06900;">💼 기타 합산소득 입력 <span style="font-size:11px;font-weight:400;color:#888;">— 소득세법 §4 종합소득 합산 (사업/근로/연금 외)</span></div>
+<div class="card" id="other-income-card" style="background:#FFFBF0;border:1px solid #D4A53D;">
+  <div class="card-title" style="color:#A06900;">💼 기타 합산소득 입력 <span style="font-size:11px;font-weight:400;color:#888;">— 체크박스에서 선택한 항목만 표시</span></div>
 
   <div style="font-size:11px;color:#666;margin-bottom:12px;line-height:1.7;padding:8px 12px;background:#FEF6E5;border-radius:6px;">
-    ※ 근로·연금소득은 위 카드에서 입력 (다중근무지·원천징수영수증 파싱 가능)<br>
-    ※ 본 카드는 <strong>금융·임대·기타소득</strong>과 <strong>이월결손금</strong> 입력용입니다<br>
+    ※ 체크박스에서 선택한 항목만 아래에 표시됩니다<br>
+    ※ <strong>금융·임대·기타소득</strong>과 <strong>이월결손금</strong> 입력 (근로·연금은 별도 카드)<br>
     ※ 입력 후 자동으로 종합소득금액에 합산됩니다
   </div>
 
@@ -483,7 +483,7 @@ input:focus,select:focus{outline:none;border-color:#185FA5;}
   </div>
 
   <!-- 금융소득 §16·§17 -->
-  <div style="padding:10px 12px;background:#FFF;border:1px solid #d8d4c4;border-radius:6px;margin-bottom:10px;">
+  <div id="row-fin" style="display:none;padding:10px 12px;background:#FFF;border:1px solid #d8d4c4;border-radius:6px;margin-bottom:10px;">
     <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
       <label style="font-weight:600;font-size:12px;min-width:140px;">💴 금융소득 (이자+배당)</label>
       <input type="number" id="finInc" placeholder="0" min="0" oninput="calcOtherIncome()" style="flex:1;min-width:120px;">
@@ -493,7 +493,7 @@ input:focus,select:focus{outline:none;border-color:#185FA5;}
   </div>
 
   <!-- 임대소득 §19·§45② -->
-  <div style="padding:10px 12px;background:#FFF;border:1px solid #d8d4c4;border-radius:6px;margin-bottom:10px;">
+  <div id="row-rental" style="display:none;padding:10px 12px;background:#FFF;border:1px solid #d8d4c4;border-radius:6px;margin-bottom:10px;">
     <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
       <label style="font-weight:600;font-size:12px;min-width:140px;">🏘️ 임대소득 (소득금액)</label>
       <input type="number" id="rentalInc" placeholder="0" oninput="calcOtherIncome()" style="flex:1;min-width:120px;">
@@ -503,7 +503,7 @@ input:focus,select:focus{outline:none;border-color:#185FA5;}
   </div>
 
   <!-- 기타소득 §21 -->
-  <div style="padding:10px 12px;background:#FFF;border:1px solid #d8d4c4;border-radius:6px;margin-bottom:10px;">
+  <div id="row-etc" style="display:none;padding:10px 12px;background:#FFF;border:1px solid #d8d4c4;border-radius:6px;margin-bottom:10px;">
     <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
       <label style="font-weight:600;font-size:12px;min-width:140px;">🎁 기타소득 (총수입금액)</label>
       <input type="number" id="etcInc" placeholder="0" min="0" oninput="calcOtherIncome()" style="flex:1;min-width:120px;">
@@ -513,7 +513,7 @@ input:focus,select:focus{outline:none;border-color:#185FA5;}
   </div>
 
   <!-- 기타소득 원천징수세액 (별도 입력) -->
-  <div style="padding:10px 12px;background:#FFF;border:1px solid #d8d4c4;border-radius:6px;margin-bottom:10px;">
+  <div id="row-otherWh" style="display:none;padding:10px 12px;background:#FFF;border:1px solid #d8d4c4;border-radius:6px;margin-bottom:10px;">
     <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
       <label style="font-weight:600;font-size:12px;min-width:140px;color:#666;">⤷ 기타·금융 원천징수세액</label>
       <input type="number" id="otherWh" placeholder="0" min="0" oninput="calcOtherIncome()" style="flex:1;min-width:120px;">
@@ -527,6 +527,19 @@ input:focus,select:focus{outline:none;border-color:#185FA5;}
     <span style="font-weight:600;color:#A06900;">📊 기타 합산소득 합계 (사업소득에 가산)</span>
     <strong id="otherIncSum" style="color:#A06900;font-size:15px;">0원</strong>
   </div>
+</div>
+
+<!-- ★ v45: 고객 전달용 메모 카드 -->
+<div class="card" style="background:#FAFCFF;border:1px solid #4A90D9;">
+  <div class="card-title" style="color:#185FA5;">📝 고객 전달 메모 <span style="font-size:11px;font-weight:400;color:#888;">— 고객 전달용 PDF 하단에 자동 표시 (인사말 자동 추가)</span></div>
+  <div style="font-size:11px;color:#666;margin-bottom:8px;line-height:1.7;padding:8px 12px;background:#F0F7FF;border-radius:6px;">
+    ※ 세무사가 고객에게 전달하고 싶은 안내사항·코멘트를 입력하세요<br>
+    ※ 한 줄씩 입력하면 자동으로 번호 매겨서 표시됩니다 (또는 자유 문장도 가능)<br>
+    ※ <strong>앞뒤로 인사말이 자동 추가</strong>됩니다 (안녕하십니까~ / 2025년 고생 많으셨습니다~)<br>
+    ※ <strong>고객 전달용 PDF 1페이지 하단</strong>에 표시
+  </div>
+  <textarea id="customer-memo" rows="5" placeholder="예시)&#10;대표님 전년 대비 매출이 급감했습니다.&#10;대표님 경비가 너무 없으십니다. 가공경비 위험을 피하기 위해 평균소득률 기준 장부신고를 권장드립니다.&#10;국민건강보험료가 다음해 11월부터 약 ○○원 증가 예상됩니다." style="width:100%;padding:10px 12px;border:1px solid #d8d4c4;border-radius:6px;font-size:13px;line-height:1.7;font-family:inherit;resize:vertical;min-height:100px;" oninput="updateMemoPreview()"></textarea>
+  <div id="memo-preview-status" style="margin-top:6px;font-size:11px;color:#888;">메모 미입력 · 입력 시 인사말 사이에 자동 삽입됩니다</div>
 </div>
 
 <!-- ★ 세액공제 · 세액감면 입력 카드 (v27 — 신고서 양식 동일) -->
@@ -751,6 +764,13 @@ input:focus,select:focus{outline:none;border-color:#185FA5;}
     <div class="card" id="customer-result-card" style="border:2px solid #185FA5;background:#FAFCFF;">
       <div class="card-title" style="color:#185FA5;">📤 고객 전달용 — 신고 유형별 예상 결과 <span style="font-size:11px;font-weight:400;color:#888;">(권장 신고유형 표시)</span></div>
       <div class="compare-grid-customer" id="cds-customer"></div>
+      <!-- ★ v45: 고객 전달 메모 (입력 시 자동 표시) — 화면·인쇄 모두 표시 -->
+      <div id="customer-memo-display" style="display:none;margin-top:16px;padding:14px 16px;background:#FFF8E7;border:1.5px solid #D4A53D;border-radius:8px;font-size:12px;line-height:1.8;color:#3A2E0A;">
+        <div style="font-weight:700;color:#A06900;margin-bottom:8px;display:flex;align-items:center;gap:6px;border-bottom:1px solid #D4A53D;padding-bottom:6px;">
+          <span style="font-size:14px;">✉️</span> 고객 안내문
+        </div>
+        <div id="customer-memo-content" style="white-space:pre-wrap;"></div>
+      </div>
       <!-- ★ v38: 인쇄 시 노출되는 안내문 (화면에서는 숨김) -->
       <div class="print-only-note" style="display:none;margin-top:16px;padding:12px 14px;background:#FFF;border:1px solid #d8d4c4;border-radius:8px;font-size:11px;line-height:1.7;color:#555;">
         <div style="font-weight:700;color:#185FA5;margin-bottom:6px;">📌 안내사항</div>
@@ -1528,6 +1548,60 @@ function toggleWork(){
   }
 }
 
+// ★ v44: 체크박스로 타소득 카드 토글 (다중 선택)
+function toggleOtherIncome(){
+  const fin = document.getElementById('ot-fin')?.checked;
+  const work = document.getElementById('ot-work')?.checked;
+  const pen = document.getElementById('ot-pen')?.checked;
+  const rent = document.getElementById('ot-rent')?.checked;
+  const etc = document.getElementById('ot-etc')?.checked;
+  
+  // 근로소득 카드 (기존)
+  const wsec = document.getElementById('work-section');
+  if(wsec){
+    wsec.classList.toggle('show', work);
+    if(work && document.querySelectorAll('.work-row').length === 0){
+      addWorkRow();
+    }
+  }
+  
+  // 공적연금 카드 (기존)
+  const psec = document.getElementById('pension-section');
+  if(psec){
+    psec.style.display = pen ? 'block' : 'none';
+    if(pen) updatePensionPreview();
+  }
+  
+  // 기타 합산소득 카드 — id로 각 행 토글
+  const finRow = document.getElementById('row-fin');
+  const rentRow = document.getElementById('row-rental');
+  const etcRow = document.getElementById('row-etc');
+  const otherWhRow = document.getElementById('row-otherWh');
+  if(finRow) finRow.style.display = fin ? 'block' : 'none';
+  if(rentRow) rentRow.style.display = rent ? 'block' : 'none';
+  if(etcRow) etcRow.style.display = etc ? 'block' : 'none';
+  // 원천징수세액 행은 금융 or 기타 체크 시 표시
+  if(otherWhRow) otherWhRow.style.display = (fin || etc) ? 'block' : 'none';
+  
+  // 미체크된 항목의 입력값 0으로 리셋
+  if(!fin) { const e=document.getElementById('finInc'); if(e) e.value=''; }
+  if(!rent){ const e=document.getElementById('rentalInc'); if(e) e.value=''; }
+  if(!etc) { const e=document.getElementById('etcInc'); if(e) e.value=''; }
+  if(!fin && !etc){ const e=document.getElementById('otherWh'); if(e) e.value=''; }
+  
+  // 기존 호환: 셀렉트박스 동기화 (가장 우선 항목 하나만)
+  const sel = document.getElementById('other-type');
+  if(sel){
+    if(work) sel.value = '근로소득';
+    else if(pen) sel.value = '연금소득';
+    else if(etc) sel.value = '기타소득';
+    else sel.value = '없음';
+  }
+  
+  // 합계 갱신
+  calcOtherIncome();
+}
+
 // 연금소득공제 (소득세법 §47의2) — 한도 900만원
 function calcPensionDeduct(gross){
   if(gross <= 0) return 0;
@@ -1643,6 +1717,65 @@ function getOtherIncomeData(){
     otherWh: otherWh,         // 기타·금융 원천징수세액
     total: finOver + rental + etcIncome  // 사업소득 외 추가 합산액
   };
+}
+
+// ★ v45: 고객 전달 메모 갱신 — 입력 텍스트를 고객 전달용 카드에 자동 표시
+// ★ v46: 앞뒤에 인사말 자동 추가 (안녕하십니까~ / 2025년 고생 많으셨습니다~)
+function updateMemoPreview(){
+  const ta = document.getElementById('customer-memo');
+  const display = document.getElementById('customer-memo-display');
+  const content = document.getElementById('customer-memo-content');
+  const status = document.getElementById('memo-preview-status');
+  if(!ta || !display || !content) return;
+  
+  const raw = (ta.value || '').trim();
+  
+  // 인사말 (앞·뒤)
+  const greeting = `안녕하십니까. 원제우세무사 사무실입니다.\n\n2025년 종합소득세 안내드립니다.`;
+  const closing = `2025년 고생 많으셨습니다.\n\n원제우세무사 사무실 일동`;
+  
+  // 입력이 없어도 인사말은 항상 표시
+  // 다만 status 표시는 입력 유무에 따라 변경
+  
+  let bodyHtml = '';
+  if(raw){
+    // 줄별로 분리해서 자동 번호 매기기 (빈 줄 제외)
+    const lines = raw.split('\n').map(s => s.trim()).filter(s => s.length > 0);
+    if(lines.length === 1){
+      bodyHtml = escapeHtml(lines[0]);
+    } else {
+      bodyHtml = lines.map((line, idx) => 
+        `<div style="display:flex;gap:8px;margin-bottom:4px;"><strong style="color:#A06900;min-width:18px;">${idx+1}.</strong><span>${escapeHtml(line)}</span></div>`
+      ).join('');
+    }
+    if(status) status.textContent = `✓ ${lines.length}개 항목 입력됨 · 고객 전달용 PDF에 인사말과 함께 표시됩니다`;
+  } else {
+    bodyHtml = `<div style="color:#888;font-style:italic;">(이 영역에 입력한 내용이 표시됩니다)</div>`;
+    if(status) status.textContent = '메모 미입력 · 입력 시 인사말 사이에 자동 삽입됩니다';
+  }
+  
+  // 인사말 + 본문 + 마무리 조합
+  const greetingHtml = escapeHtml(greeting).replace(/\n/g, '<br>');
+  const closingHtml = escapeHtml(closing).replace(/\n/g, '<br>');
+  
+  content.innerHTML = `
+    <div style="margin-bottom:14px;line-height:1.8;">${greetingHtml}</div>
+    <div style="padding:10px 12px;background:#FFF;border-left:3px solid #D4A53D;border-radius:4px;margin-bottom:14px;">${bodyHtml}</div>
+    <div style="line-height:1.8;text-align:right;color:#5A4500;">${closingHtml}</div>
+  `;
+  
+  // 인사말은 항상 표시
+  display.style.display = 'block';
+}
+
+// HTML escape 헬퍼
+function escapeHtml(str){
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
 }
 
 
@@ -3444,6 +3577,8 @@ document.addEventListener('DOMContentLoaded', function(){
       stdAmt.style.display = (this.value === 'manual') ? 'block' : 'none';
     });
   }
+  // ★ v46: 페이지 로드 시 인사말 미리보기 초기화
+  if(typeof updateMemoPreview === 'function') updateMemoPreview();
 });
 
 // ===== 디버그: 추출 텍스트 확인 =====
