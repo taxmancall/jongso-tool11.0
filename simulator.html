@@ -179,7 +179,7 @@ input:focus,select:focus{outline:none;border-color:#185FA5;}
 <div class="container">
 <a class="back" href="index.html">← 인덱스로 돌아가기</a>
 <h1>🧮 종합소득세 신고대리 가결산 시뮬레이터</h1>
-<p class="sub">2025년 귀속 종합소득세 · 간편(기준)/간편(단순)/기장 3가지 비교 <span style="color:#185FA5;font-weight:600;">v46</span> <span style="font-size:11px;color:#888;">(고객 안내문 — 인사말 자동 추가)</span></p>
+<p class="sub">2025년 귀속 종합소득세 · 간편(기준)/간편(단순)/기장 3가지 비교 <span style="color:#185FA5;font-weight:600;">v47</span> <span style="font-size:11px;color:#888;">(제출 지출액 명세 카드 추가)</span></p>
 
 <!-- 이름 입력 -->
 <!-- ========== 입력 영역 (PDF 1번에서만 표시) ========== -->
@@ -542,6 +542,26 @@ input:focus,select:focus{outline:none;border-color:#185FA5;}
   <div id="memo-preview-status" style="margin-top:6px;font-size:11px;color:#888;">메모 미입력 · 입력 시 인사말 사이에 자동 삽입됩니다</div>
 </div>
 
+<!-- ★ v47: 제출 지출액 명세 입력 카드 -->
+<div class="card" style="background:#F4FAF0;border:1px solid #7CAA56;">
+  <div class="card-title" style="color:#3B6D11;">📂 제출 지출액 명세 <span style="font-size:11px;font-weight:400;color:#888;">— 고객이 제출한 영수증·증빙 항목별 합계</span></div>
+  <div style="font-size:11px;color:#666;margin-bottom:8px;line-height:1.7;padding:8px 12px;background:#EAF4E4;border-radius:6px;">
+    ※ 고객님이 제출하신 항목과 금액을 입력하세요 (카드·건강보험료·자동차보험료 등)<br>
+    ※ 합계가 자동 계산되어 <strong>고객 전달용 PDF 1페이지 하단</strong>에 표시됩니다<br>
+    ※ 사무실에서 정리한 자료를 고객에게 명확히 안내하는 용도
+  </div>
+  <div id="expense-rows" style="display:flex;flex-direction:column;gap:6px;">
+    <!-- 동적 행 -->
+  </div>
+  <button onclick="addExpenseRow()" style="margin-top:8px;width:100%;padding:8px;background:transparent;border:1px dashed #7CAA56;border-radius:6px;color:#3B6D11;cursor:pointer;font-family:inherit;font-size:12px;font-weight:600;">
+    + 지출 항목 추가
+  </button>
+  <div style="margin-top:10px;padding:10px 12px;background:#FFF;border:1px solid #7CAA56;border-radius:6px;display:flex;justify-content:space-between;align-items:center;font-size:13px;">
+    <span style="font-weight:600;color:#3B6D11;">📊 제출 지출액 합계</span>
+    <strong id="expense-sum-display" style="color:#A32D2D;font-size:15px;">0원</strong>
+  </div>
+</div>
+
 <!-- ★ 세액공제 · 세액감면 입력 카드 (v27 — 신고서 양식 동일) -->
 <div class="card">
   <div class="card-title">💰 세액공제 · 세액감면 <span style="font-size:11px;font-weight:400;color:#888;">— 종합소득세 신고서 양식(연금계좌·특별세액공제·기부금·감면) 일치</span></div>
@@ -770,6 +790,18 @@ input:focus,select:focus{outline:none;border-color:#185FA5;}
           <span style="font-size:14px;">✉️</span> 고객 안내문
         </div>
         <div id="customer-memo-content" style="white-space:pre-wrap;"></div>
+      </div>
+      
+      <!-- ★ v47: 제출 지출액 명세 (고객 제출 영수증·증빙 합산) -->
+      <div id="customer-expense-display" style="display:none;margin-top:16px;padding:14px 16px;background:#F4FAF0;border:1.5px solid #7CAA56;border-radius:8px;font-size:12px;line-height:1.7;color:#1a1a1a;">
+        <div style="font-weight:700;color:#3B6D11;margin-bottom:10px;display:flex;align-items:center;gap:6px;border-bottom:1px solid #7CAA56;padding-bottom:6px;">
+          <span style="font-size:14px;">📂</span> 고객님이 제출하신 지출액 명세
+        </div>
+        <div id="customer-expense-content"></div>
+        <div id="customer-expense-total" style="margin-top:10px;padding:10px 12px;background:#FFF;border:1.5px solid #3B6D11;border-radius:6px;display:flex;justify-content:space-between;align-items:center;">
+          <span style="font-weight:700;color:#3B6D11;font-size:13px;">📊 제출 지출액 합계</span>
+          <strong id="customer-expense-sum" style="color:#A32D2D;font-size:16px;">0원</strong>
+        </div>
       </div>
       <!-- ★ v38: 인쇄 시 노출되는 안내문 (화면에서는 숨김) -->
       <div class="print-only-note" style="display:none;margin-top:16px;padding:12px 14px;background:#FFF;border:1px solid #d8d4c4;border-radius:8px;font-size:11px;line-height:1.7;color:#555;">
@@ -1776,6 +1808,89 @@ function escapeHtml(str){
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#39;');
+}
+
+// ★ v47: 제출 지출액 명세 관리
+let expenseRowIdx = 0;
+
+function addExpenseRow(label, amount){
+  expenseRowIdx++;
+  const idx = expenseRowIdx;
+  const wrap = document.getElementById('expense-rows');
+  if(!wrap) return;
+  const row = document.createElement('div');
+  row.className = 'expense-row';
+  row.dataset.idx = idx;
+  row.style.cssText = 'display:flex;gap:6px;align-items:center;';
+  row.innerHTML = `
+    <span style="min-width:24px;color:#888;font-size:12px;font-weight:600;" class="exp-num">${idx}.</span>
+    <input type="text" class="exp-label" placeholder="항목명 (예: 카드, 건강보험료, 자동차보험료)" value="${escapeHtml(label||'')}" style="flex:1.5;padding:7px 10px;border:1px solid #d8d4c4;border-radius:6px;font-family:inherit;font-size:13px;" oninput="updateExpensePreview()">
+    <input type="number" class="exp-amount" placeholder="0" min="0" value="${amount||''}" style="flex:1;padding:7px 10px;border:1px solid #d8d4c4;border-radius:6px;font-family:inherit;font-size:13px;text-align:right;" oninput="updateExpensePreview()">
+    <span style="font-size:11px;color:#888;min-width:18px;">원</span>
+    <button onclick="removeExpenseRow(${idx})" style="padding:5px 9px;background:transparent;border:1px solid #d8d4c4;border-radius:4px;color:#888;cursor:pointer;font-family:inherit;font-size:11px;">✕</button>
+  `;
+  wrap.appendChild(row);
+  updateExpensePreview();
+}
+
+function removeExpenseRow(idx){
+  const row = document.querySelector(`.expense-row[data-idx="${idx}"]`);
+  if(row) row.remove();
+  // 번호 재정렬
+  document.querySelectorAll('.expense-row').forEach((r, i) => {
+    const numEl = r.querySelector('.exp-num');
+    if(numEl) numEl.textContent = (i+1) + '.';
+  });
+  updateExpensePreview();
+}
+
+function updateExpensePreview(){
+  const rows = document.querySelectorAll('.expense-row');
+  let sum = 0;
+  const items = [];
+  rows.forEach(r => {
+    const label = r.querySelector('.exp-label')?.value?.trim() || '';
+    const amt = N(r.querySelector('.exp-amount')?.value);
+    if(amt > 0 || label){
+      items.push({label, amt});
+      sum += amt;
+    }
+  });
+  
+  // 입력 카드의 합계 표시
+  const inputSum = document.getElementById('expense-sum-display');
+  if(inputSum) inputSum.textContent = F(sum) + '원';
+  
+  // 고객 전달용 카드의 표시 영역 갱신
+  const display = document.getElementById('customer-expense-display');
+  const content = document.getElementById('customer-expense-content');
+  const customerSum = document.getElementById('customer-expense-sum');
+  if(!display || !content || !customerSum) return;
+  
+  if(items.length === 0){
+    display.style.display = 'none';
+    return;
+  }
+  
+  // 빈 행은 제외, 실제 항목만 표시
+  const validItems = items.filter(it => it.label || it.amt > 0);
+  if(validItems.length === 0){
+    display.style.display = 'none';
+    return;
+  }
+  
+  let html = '<div style="display:flex;flex-direction:column;gap:4px;">';
+  validItems.forEach((it, i) => {
+    const label = it.label || '(미입력)';
+    html += `<div style="display:flex;justify-content:space-between;padding:4px 8px;background:#FFF;border-radius:4px;">
+      <span><strong style="color:#3B6D11;">${i+1}.</strong> ${escapeHtml(label)}</span>
+      <span style="font-weight:600;">${F(it.amt)}원</span>
+    </div>`;
+  });
+  html += '</div>';
+  content.innerHTML = html;
+  customerSum.textContent = F(sum) + '원';
+  display.style.display = 'block';
 }
 
 
@@ -3579,6 +3694,10 @@ document.addEventListener('DOMContentLoaded', function(){
   }
   // ★ v46: 페이지 로드 시 인사말 미리보기 초기화
   if(typeof updateMemoPreview === 'function') updateMemoPreview();
+  // ★ v47: 제출 지출액 명세 — 초기 행 1개 자동 생성
+  if(typeof addExpenseRow === 'function' && document.querySelectorAll('.expense-row').length === 0){
+    addExpenseRow();
+  }
 });
 
 // ===== 디버그: 추출 텍스트 확인 =====
